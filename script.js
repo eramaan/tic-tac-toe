@@ -4,12 +4,12 @@ console.log("go bananas");
 //name, token, active
 
 let players = {
-    PlayerOne: {
+    playerOne: {
         name:"One",
         token:1,
         active:1
     },
-    PlayerTwo: {
+    playerTwo: {
         name:"Two",
         token:2,
         active:0
@@ -17,11 +17,11 @@ let players = {
 };
 
 let setActivePlayer = () => {
-    let activePlayer = players.PlayerOne.active === 1 ? players.PlayerOne : players.PlayerTwo;
-    console.log(activePlayer);
+    let activePlayer = players.playerOne.active === 1 ? players.playerOne : players.playerTwo;
     return activePlayer;
 };
-setActivePlayer();
+
+let currentPlayer = setActivePlayer();
 
 function Gameboard() {
 
@@ -44,11 +44,14 @@ function Gameboard() {
         console.log(boardWithCellValues);
     };
 
-    // use this to update cell value: board[1][2].addToken(players.PlayerOne);
+    // use this to update cell value: board[1][2].addToken(players.playerOne);
+    // Gameboard().dropToken(1,1,currentPlayer)
 
-    const dropToken = (row, column, activePlayer) => {
+    const dropToken = (row, column, currentPlayer) => {
     
-    board[row][column].addToken(activePlayer);
+    // board[row][column].addToken(currentPlayer);
+    board[row][column].addToken(currentPlayer);
+    console.log("done");
     }
 
     // This will be the method of getting the entire board that our
@@ -62,12 +65,14 @@ function Gameboard() {
 function Cell() {
     let value = 0;
   
+
+    // per lanciarlo Cell().addToken(currentPlayer)
     const addToken = (player) => {
       value = player.token;
+      console.log(value)
     };
   
     const getValue = () => value;
-  
     return {
       addToken,
       getValue
@@ -85,24 +90,25 @@ board = Gameboard()
 //check win/tie
 //change active player
 
-const checkCell = (row, column, activePlayer) => {
-    if (board[row][column].getValue != 0) { //usa le coordinate della cella
+const checkCell = (row, column, currentPlayer) => {
+    if (Gameboard().getBoard()[row][column].getValue() != 0) { //usa le coordinate della cella
         return;
     } else {
-        dropToken(row, column, activePlayer);
+        Gameboard().dropToken(row, column, currentPlayer);
     }
 };
 
 
 const switchPlayerTurn = () => {
-    if (players.PlayerOne.active === 1) {
-        players.PlayerOne.active = 0;
-        players.PlayerTwo.active = 1;
+    if (players.playerOne.active === 1) {
+        players.playerOne.active = 0;
+        players.playerTwo.active = 1;
     } else {
-        players.PlayerOne.active = 1;
-        players.PlayerTwo.active = 0;
+        players.playerOne.active = 1;
+        players.playerTwo.active = 0;
     }
-    setActivePlayer();
+    currentPlayer = setActivePlayer();
+    console.log(currentPlayer);
   };
 
 
