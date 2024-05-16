@@ -28,13 +28,20 @@ function Gameboard() {
     // drop a token, changing cell's value to the player number
     const dropToken = (row, column, player) => {
 
-    
-        // If no cells make it through the filter, 
-        // the move is invalid. Stop execution.
-        if (board[row][column].getValue() !== 0) return;
-    
-        // Otherwise, I have a valid cell, the last one in the filtered array
+      let validMove = true; 
+
+      if (row < 0 || row >= rows || column < 0 || column >= columns) {
+        console.log("Invalid move: coordinates out of bounds.");
+        return false; // Coordinate non valide
+    }
+    if (board[row][column].getValue() !== 0) {
+        console.log("Invalid move: cell already occupied.");
+        return false; // Cella già occupata
+    }
+          
+        // Otherwise, I have a valid cell
         board[row][column].addToken(player);
+        return true;
       };
   
     // This method will be used to print our board to the console.
@@ -113,8 +120,14 @@ function Gameboard() {
       console.log(
         `Dropping ${getActivePlayer().name}'s token into row ${row} & column ${column}...`
       );
-      board.dropToken(row, column, getActivePlayer().token);
-  
+
+      // board.dropToken(row, column, getActivePlayer().token);
+
+      if (!board.dropToken(row, column, getActivePlayer().token)) {
+        console.log("Try again.");
+        return;
+    }
+
       /*  This is where we would check for a winner and handle that logic,
           such as a win message. */
   
