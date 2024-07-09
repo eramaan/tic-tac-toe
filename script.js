@@ -23,11 +23,11 @@ function Gameboard() {
   // drop a token, changing cell's value to the player number
   const dropToken = (row, column, player) => {
       if (row < 0 || row >= rows || column < 0 || column >= columns) {
-          console.log("Invalid move: coordinates out of bounds.");
+          addMessage("Invalid move: coordinates out of bounds.");
           return false;
       }
       if (board[row][column].getValue() !== 0) {
-          console.log("Invalid move: cell already occupied.");
+          addMessage("Invalid move: cell already occupied.");
           return false;
       }
       // Valid cell
@@ -37,8 +37,7 @@ function Gameboard() {
 
   // Method to print the board to the console
   const printBoard = () => {
-      const boardWithCellValues = board.map((row) => row.map((cell) => cell.getValue()))
-      console.log(boardWithCellValues);
+      const boardWithCellValues = board.map((row) => row.map((cell) => cell.getValue()));
   };
 
   // Interface for interacting with the board
@@ -75,7 +74,7 @@ function Cell() {
 ** anybody has won the game
 */
 function GameController(playerOneName = "Player One", playerTwoName = "Player Two") {
-  const board = Gameboard();
+  let board = Gameboard();
 
   const players = [
       {
@@ -100,21 +99,26 @@ function GameController(playerOneName = "Player One", playerTwoName = "Player Tw
 
   const printNewRound = () => {
       board.printBoard();
-      console.log(`${getActivePlayer().name}'s turn.`);
+      addMessage(`${getActivePlayer().name}'s turn.`);
   };
 
   const playRound = (row, column) => {
-      console.log(
-          `Dropping ${getActivePlayer().name}'s token into row ${row} & column ${column}...`
-      );
+      addMessage(`Dropping ${getActivePlayer().name}'s token into row ${row} & column ${column}...`);
 
       if (!board.dropToken(row, column, getActivePlayer().token)) {
-          console.log("Try again.");
+          addMessage("Try again.");
           return;
       }
 
       // Switch player turn
       switchPlayerTurn();
+      printNewRound();
+  };
+
+  const resetGame = () => {
+      board = Gameboard();
+      activePlayer = players[0];
+      addMessage("Game reset. Starting a new game.");
       printNewRound();
   };
 
@@ -126,11 +130,26 @@ function GameController(playerOneName = "Player One", playerTwoName = "Player Tw
       playRound,
       getActivePlayer,
       getBoard: board.getBoard,
-      setPlayerName
+      setPlayerName,
+      resetGame
   };
 }
 
 const game = GameController();
+
+// Utility function to add messages to the messages div
+function addMessage(message) {
+  const messagesDiv = document.querySelector('.messages');
+  const messageParagraph = document.createElement('p');
+  messageParagraph.textContent = message;
+  messagesDiv.appendChild(messageParagraph);
+}
+
+// Clear the messages
+function clearMessages() {
+  const messagesDiv = document.querySelector('.messages');
+  messagesDiv.textContent = "";
+}
 
 // DOM manipulation
 
@@ -187,6 +206,8 @@ document.addEventListener('DOMContentLoaded', function() {
   // Recupera gli elementi dal DOM
   const nameInputOne = document.getElementById('playerNameOne');
   const nameInputTwo = document.getElementById('playerNameTwo');
+  const saveNameButton = document.getElementById('saveNameButton');
+  const resetButton = document.getElementById('resetButton');
   const savedName = document.getElementById('savedName');
 
   // Aggiungi event listener agli input
@@ -202,4 +223,10 @@ document.addEventListener('DOMContentLoaded', function() {
       savedName.innerHTML = `${nameInputOne.value} - your sign will be X<br>${playerTwoName} - your sign will be O`;
   });
 
+  // Aggiungi event listener al bottone di reset
+  resetButton.addEventListener('click', function() {
+      clearMessages();
+      game.resetGame();
+      ScreenController(game);
+  });
 });

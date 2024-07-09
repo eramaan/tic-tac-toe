@@ -7,19 +7,23 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>Tic-Tac-Toe</h1>
-    <p id="savedName">Welcome players, please enter your names</p>
-    <input type="text" id="playerNameOne" placeholder="Your name, player1">
-    <input type="text" id="playerNameTwo" placeholder="Your name, player2">
+    <h1 class="mb-3">Tic-Tac-Toe</h1>
 
-    <div class="container">
+    <p id="savedName" class="mb-3">Welcome players, please enter your names</p>
+
+    <div class="mb-3">
+        <input type="text" id="playerNameOne" placeholder="Your name, player1">
+        <input type="text" id="playerNameTwo" placeholder="Your name, player2">
+    </div>
+
+    <div class="container mb-3">
         <h3 class="turn"></h3>
         <div class="board"></div>
     </div>
 
+    <button id="resetButton" class="mb-3">reset</button>
 
-    <button type="button">restart</button>
-    <p id="gameMoves">Here are moves done:</p>
+    <p class="messages" class="mb-3">Here are the moves:</p>
 
     <script src="script.js"></script>
 </body>
