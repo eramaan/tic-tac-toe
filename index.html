@@ -5,16 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tic tac toe project</title>
     <link rel="stylesheet" href="style.css">
-    <script src="script.js"></script>
 </head>
 <body>
+    <h1>Tic-Tac-Toe</h1>
+    <p id="savedName">Welcome players, please enter your names</p>
     <input type="text" id="playerNameOne" placeholder="Your name, player1">
     <input type="text" id="playerNameTwo" placeholder="Your name, player2">
-    <button type="button" id="saveNameButton">save names</button>
-    <p id="savedName">Welcome players, please enter your names before the game</p>
 
+    <div class="container">
+        <h3 class="turn"></h3>
+        <div class="board"></div>
+    </div>
 
 
     <button type="button">restart</button>
+    <p id="gameMoves">Here are moves done:</p>
+
+    <script src="script.js"></script>
 </body>
 </html>
