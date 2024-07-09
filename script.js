@@ -148,3 +148,33 @@ function Gameboard() {
   }
   
   const game = GameController();
+
+
+
+  //
+  // DOM manipulation
+  // let's go
+  //
+
+
+
+  // Attendi che il DOM sia completamente caricato
+document.addEventListener('DOMContentLoaded', function() {
+  // Recupera gli elementi dal DOM
+  const nameInputOne = document.getElementById('playerNameOne');
+  const nameInputTwo = document.getElementById('playerNameTwo');
+  const saveNameButton = document.getElementById('saveNameButton');
+  const savedName = document.getElementById('savedName');
+
+
+  // Aggiungi un event listener al bottone
+  saveNameButton.addEventListener('click', function() {
+      // Recupera il valore dell'input
+      const playerOneName = nameInputOne.value;
+      const playerTwoName = nameInputTwo.value;
+
+      
+      // Salva il valore nel paragrafo
+      savedName.innerHTML = `Player 1: ${playerOneName} - your sign will be X<br>Player 2: ${playerTwoName} - your sign will be O`;
+  });
+});
