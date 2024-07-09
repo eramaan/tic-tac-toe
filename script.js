@@ -1,142 +1,3 @@
-/*
-** The Gameboard represents the state of the board
-** Each square holds a Cell (defined later)
-** and we expose a dropToken method to be able to add Cells to squares
-*/
-
-function Gameboard() {
-  const rows = 3;
-  const columns = 3;
-  const board = [];
-
-  // Create a 2d array that will represent the state of the game board
-  for (let i = 0; i < rows; i++) {
-      board[i] = [];
-      for (let j = 0; j < columns; j++) {
-          board[i].push(Cell());
-      }
-  }
-
-  // Method to get the entire board
-  const getBoard = () => board;
-
-  // drop a token, changing cell's value to the player number
-  const dropToken = (row, column, player) => {
-      if (row < 0 || row >= rows || column < 0 || column >= columns) {
-          addMessage("Invalid move: coordinates out of bounds.");
-          return false;
-      }
-      if (board[row][column].getValue() !== 0) {
-          addMessage("Invalid move: cell already occupied.");
-          return false;
-      }
-      // Valid cell
-      board[row][column].addToken(player);
-      return true;
-  };
-
-  // Method to print the board to the console
-  const printBoard = () => {
-      const boardWithCellValues = board.map((row) => row.map((cell) => cell.getValue()));
-  };
-
-  // Interface for interacting with the board
-  return { getBoard, dropToken, printBoard };
-}
-
-/*
-** A Cell represents one "square" on the board and can have one of
-** 0: no token is in the square,
-** 1: Player One's token,
-** 2: Player 2's token
-*/
-
-function Cell() {
-  let value = 0;
-
-  // Accept a player's token to change the value of the cell
-  const addToken = (player) => {
-      value = player;
-  };
-
-  // Retrieve the current value of this cell
-  const getValue = () => value;
-
-  return {
-      addToken,
-      getValue
-  };
-}
-
-/* 
-** The GameController will be responsible for controlling the 
-** flow and state of the game's turns, as well as whether
-** anybody has won the game
-*/
-function GameController(playerOneName = "Player One", playerTwoName = "Player Two") {
-  let board = Gameboard();
-
-  const players = [
-      {
-          name: playerOneName,
-          token: 1
-      },
-      {
-          name: playerTwoName,
-          token: 2
-      }
-  ];
-
-  let activePlayer = players[0];
-
-  const switchPlayerTurn = () => {
-      activePlayer = activePlayer === players[0] ? players[1] : players[0];
-  };
-  const getActivePlayer = () => activePlayer;
-  const setPlayerName = (playerIndex, name) => {
-      players[playerIndex].name = name;
-  };
-
-  const printNewRound = () => {
-      board.printBoard();
-      addMessage(`${getActivePlayer().name}'s turn.`);
-  };
-
-  const playRound = (row, column) => {
-      addMessage(`Dropping ${getActivePlayer().name}'s token into row ${row} & column ${column}...`);
-
-      if (!board.dropToken(row, column, getActivePlayer().token)) {
-          addMessage("Try again.");
-          return;
-      }
-
-      // Switch player turn
-      switchPlayerTurn();
-      printNewRound();
-  };
-
-  const resetGame = () => {
-      board = Gameboard();
-      activePlayer = players[0];
-      addMessage("Game reset. Starting a new game.");
-      printNewRound();
-  };
-
-  // Initial play game message
-  printNewRound();
-
-  // Interface for the UI
-  return {
-      playRound,
-      getActivePlayer,
-      getBoard: board.getBoard,
-      setPlayerName,
-      resetGame
-  };
-}
-
-const game = GameController();
-
 // Utility function to add messages to the messages div
 function addMessage(message) {
   const messagesDiv = document.querySelector('.messages');
@@ -151,82 +12,252 @@ function clearMessages() {
   messagesDiv.textContent = "";
 }
 
-// DOM manipulation
+// Disable the board
+function disableBoard() {
+  const cellButtons = document.querySelectorAll('.cell');
+  cellButtons.forEach(button => button.disabled = true);
+}
+
+function Cell() {
+  let value = 0;
+
+  // Accept a player's token to change the value of the cell
+  const addToken = (player) => {
+    value = player;
+  };
+
+  // Retrieve the current value of this cell
+  const getValue = () => value;
+
+  return {
+    addToken,
+    getValue
+  };
+}
+
+function Gameboard() {
+  const rows = 3;
+  const columns = 3;
+  let board = [];
+
+  const initializeBoard = () => {
+    board = [];
+    for (let i = 0; i < rows; i++) {
+      board[i] = [];
+      for (let j = 0; j < columns; j++) {
+        board[i].push(Cell());
+      }
+    }
+  };
+
+  initializeBoard();
+
+  const getBoard = () => board;
+
+  const dropToken = (row, column, player) => {
+    if (row < 0 || row >= rows || column < 0 || column >= columns) {
+      addMessage("Invalid move: coordinates out of bounds.");
+      return false;
+    }
+    if (board[row][column].getValue() !== 0) {
+      addMessage("Invalid move: cell already occupied.");
+      return false;
+    }
+    board[row][column].addToken(player);
+    return true;
+  };
+
+  const reset = () => {
+    initializeBoard();
+  };
+
+  return { getBoard, dropToken, reset };
+}
+
+function GameController(playerOneName = "Player One", playerTwoName = "Player Two") {
+  let board = Gameboard();
+
+  const players = [
+    {
+      name: playerOneName,
+      token: 1
+    },
+    {
+      name: playerTwoName,
+      token: 2
+    }
+  ];
+
+  let activePlayer = players[0];
+
+  const switchPlayerTurn = () => {
+    activePlayer = activePlayer === players[0] ? players[1] : players[0];
+  };
+  const getActivePlayer = () => activePlayer;
+  const setPlayerName = (playerIndex, name) => {
+    players[playerIndex].name = name;
+  };
+
+  const printNewRound = () => {
+    addMessage(`${getActivePlayer().name}'s turn.`);
+  };
+
+  const playRound = (row, column) => {
+    addMessage(`Dropping ${getActivePlayer().name}'s token into row ${row} & column ${column}...`);
+
+    if (!board.dropToken(row, column, getActivePlayer().token)) {
+      addMessage("Try again.");
+      return;
+    }
+
+    if (checkWin(board.getBoard(), getActivePlayer().token)) {
+      addMessage(`${getActivePlayer().name} wins!`);
+      disableBoard();
+      return;
+    }
+
+    if (checkTie(board.getBoard())) {
+      addMessage("It's a tie!");
+      disableBoard();
+      return;
+    }
+
+    switchPlayerTurn();
+    printNewRound();
+  };
+
+  const resetGame = () => {
+    board.reset();
+    activePlayer = players[0];
+    clearMessages();
+    addMessage("Game reset. Starting a new game.");
+    printNewRound();
+  };
+
+  function checkWin(board, player) {
+    const rows = board.length;
+    const columns = board[0].length;
+
+    // Check rows
+    for (let i = 0; i < rows; i++) {
+      if (board[i].every(cell => cell.getValue() === player)) {
+        return true;
+      }
+    }
+
+    // Check columns
+    for (let j = 0; j < columns; j++) {
+      if (board.every(row => row[j].getValue() === player)) {
+        return true;
+      }
+    }
+
+    // Check diagonal (top-left to bottom-right)
+    if (board.every((row, idx) => row[idx].getValue() === player)) {
+      return true;
+    }
+
+    // Check diagonal (top-right to bottom-left)
+    if (board.every((row, idx) => row[columns - 1 - idx].getValue() === player)) {
+      return true;
+    }
+
+    return false;
+  }
+
+  function checkTie(board) {
+    return board.every(row => row.every(cell => cell.getValue() !== 0));
+  }
+
+  printNewRound();
+
+  return {
+    playRound,
+    getActivePlayer,
+    getBoard: board.getBoard,
+    setPlayerName,
+    resetGame
+  };
+}
 
 function ScreenController(game) {
   const playerTurnDiv = document.querySelector('.turn');
   const boardDiv = document.querySelector('.board');
 
   const updateScreen = () => {
-      // clear the board
-      boardDiv.textContent = "";
+    boardDiv.textContent = "";
 
-      // get the newest version of the board and player turn
-      const board = game.getBoard();
-      const activePlayer = game.getActivePlayer();
+    const board = game.getBoard();
+    const activePlayer = game.getActivePlayer();
 
-      // Display player's turn
-      playerTurnDiv.textContent = `${activePlayer.name}'s turn...`
-
-      // Render board squares
-      board.forEach((row, rowIndex) => {
-          row.forEach((cell, columnIndex) => {
-              // Anything clickable should be a button!!
-              const cellButton = document.createElement("button");
-              cellButton.classList.add("cell");
-              // Create data attributes to identify the row and column
-              cellButton.dataset.row = rowIndex;
-              cellButton.dataset.column = columnIndex;
-              cellButton.textContent = cell.getValue();
-              boardDiv.appendChild(cellButton);
-          });
+    board.forEach((row, rowIndex) => {
+      row.forEach((cell, columnIndex) => {
+        const cellButton = document.createElement("button");
+        cellButton.classList.add("cell");
+        cellButton.dataset.row = rowIndex;
+        cellButton.dataset.column = columnIndex;
+        cellButton.textContent = cell.getValue() === 1 ? 'X' : cell.getValue() === 2 ? 'O' : '';
+        boardDiv.appendChild(cellButton);
       });
+    });
+
+    const messagesDiv = document.querySelector('.messages').textContent;
+    if (messagesDiv.includes('wins') || messagesDiv.includes("It's a tie")) {
+      disableBoard();
+      playerTurnDiv.textContent = messagesDiv;
+    } else {
+      playerTurnDiv.textContent = `${activePlayer.name}'s turn...`;
+    }
   };
 
-  // Add event listener for the board
   function clickHandlerBoard(e) {
-      const selectedRow = e.target.dataset.row;
-      const selectedColumn = e.target.dataset.column;
-      // Make sure I've clicked a column and not the gaps in between
-      if (selectedRow === undefined || selectedColumn === undefined) return;
-      
-      game.playRound(parseInt(selectedRow), parseInt(selectedColumn));
-      updateScreen();
+    const selectedRow = e.target.dataset.row;
+    const selectedColumn = e.target.dataset.column;
+    if (!selectedRow || !selectedColumn) return;
+
+    game.playRound(parseInt(selectedRow), parseInt(selectedColumn));
+    updateScreen();
   }
+
   boardDiv.addEventListener("click", clickHandlerBoard);
 
-  // Initial render
   updateScreen();
+
+  return {
+    updateScreen  // Return the updateScreen function
+  };
+
 }
 
-ScreenController(game);
-
-// Attendi che il DOM sia completamente caricato
 document.addEventListener('DOMContentLoaded', function() {
-  // Recupera gli elementi dal DOM
+  const game = GameController();
+  const screen = ScreenController(game);
+
   const nameInputOne = document.getElementById('playerNameOne');
   const nameInputTwo = document.getElementById('playerNameTwo');
-  const saveNameButton = document.getElementById('saveNameButton');
   const resetButton = document.getElementById('resetButton');
   const savedName = document.getElementById('savedName');
 
-  // Aggiungi event listener agli input
   nameInputOne.addEventListener('input', function() {
-      const playerOneName = nameInputOne.value;
-      game.setPlayerName(0, playerOneName);
-      savedName.innerHTML = `${playerOneName} - your sign will be X<br>${nameInputTwo.value} - your sign will be O`;
+    const playerOneName = nameInputOne.value;
+    game.setPlayerName(0, playerOneName);
+    updateSavedNames();
   });
 
   nameInputTwo.addEventListener('input', function() {
-      const playerTwoName = nameInputTwo.value;
-      game.setPlayerName(1, playerTwoName);
-      savedName.innerHTML = `${nameInputOne.value} - your sign will be X<br>${playerTwoName} - your sign will be O`;
+    const playerTwoName = nameInputTwo.value;
+    game.setPlayerName(1, playerTwoName);
+    updateSavedNames();
   });
 
-  // Aggiungi event listener al bottone di reset
   resetButton.addEventListener('click', function() {
-      clearMessages();
-      game.resetGame();
-      ScreenController(game);
+    game.resetGame();
+    screen.updateScreen();
   });
+
+  function updateSavedNames() {
+    savedName.innerHTML = `${nameInputOne.value || 'Player One'} - your sign will be X<br>${nameInputTwo.value || 'Player Two'} - your sign will be O`;
+  }
+
+  updateSavedNames();
 });
